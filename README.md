@@ -41,15 +41,16 @@
 
 ---
 
+
 # Задание 2
 
-Рассмотрим базу данных интернет-магазина, состоящую из таблиц:
+Рассмотрим базу данных, состоящую из трёх таблиц:
 
-- users
-- books
-- stores
+- users (пользователи);
+- books (книги);
+- stores (магазины).
 
----
+Для демонстрации принципов вертикального и горизонтального шардинга в качестве примера используется таблица users, дополненная полями password и phone.
 
 ## Вертикальный шардинг
 
@@ -62,7 +63,7 @@
 
 ---
 
-После разделения получаем:
+После выполнения вертикального шардинга таблица users разделяется на три логические части:
 
 ### Сервер №1
 
@@ -162,9 +163,9 @@ version: "3.8"
 
 services:
 
-  postgres_master:
+  postgres_main:
     image: postgres:16
-    container_name: postgres_master
+    container_name: postgres_main
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -207,6 +208,8 @@ services:
 
 ## SQL
 
+### Основная таблица
+
 ```sql
 CREATE TABLE users (
     id BIGINT PRIMARY KEY,
@@ -220,23 +223,43 @@ CREATE TABLE users (
 ### Первый шард
 
 ```sql
-CHECK (id BETWEEN 1 AND 100000)
+CREATE TABLE users_shard1 (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    password VARCHAR(255),
+    phone VARCHAR(20),
+    CHECK (id BETWEEN 1 AND 100000)
+);
 ```
 
 ### Второй шард
 
 ```sql
-CHECK (id BETWEEN 100001 AND 200000)
+CREATE TABLE users_shard2 (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    password VARCHAR(255),
+    phone VARCHAR(20),
+    CHECK (id BETWEEN 100001 AND 200000)
+);
 ```
 
 ### Третий шард
 
 ```sql
-CHECK (id >= 200001)
+CREATE TABLE users_shard3 (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    password VARCHAR(255),
+    phone VARCHAR(20),
+    CHECK (id >= 200001)
+);
 ```
 
----
 
 # Вывод
 
-В ходе выполнения домашнего задания были рассмотрены основные способы масштабирования баз данных. Изучены преимущества репликации с использованием Master и Slave-серверов, а также разработан план вертикального и горизонтального шардинга. Предложенная архитектура позволяет повысить производительность, обеспечить отказоустойчивость и упростить масштабирование системы.
+В ходе выполнения домашнего задания были рассмотрены основные способы масштабирования баз данных. Описаны преимущества репликации с использованием Master- и Slave-серверов, а также разработаны примеры вертикального и горизонтального шардинга. Предложенные решения позволяют повысить производительность, обеспечить отказоустойчивость и упростить масштабирование базы данных.
